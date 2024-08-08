@@ -1,6 +1,9 @@
+using EvaluationTask.Web.Filters;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
 
 Log.Logger = new LoggerConfiguration()
 	.MinimumLevel.Information()
@@ -10,9 +13,14 @@ Log.Logger = new LoggerConfiguration()
 		rollOnFileSizeLimit: true)
 	.CreateLogger();
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+// Use Serilog as the default logging provider
+builder.Host.UseSerilog();
 
+// Add services to the container.
+builder.Services.AddControllersWithViews(options =>
+{
+	options.Filters.Add<LoggingActionFilter>();
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -34,4 +42,5 @@ app.MapControllerRoute(
 	name: "default",
 	pattern: "{controller=Home}/{action=Index}/{id?}");
 
+app.Logger.LogInformation("Starting the app...New");
 app.Run();
