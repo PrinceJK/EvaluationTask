@@ -1,4 +1,6 @@
+using EvaluationTask.Web.Data;
 using EvaluationTask.Web.Filters;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +19,11 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container.
+builder.Services.AddDbContext<ApplicationDbContext>(opt =>
+{
+	opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+
 builder.Services.AddControllersWithViews(options =>
 {
 	options.Filters.Add<LoggingActionFilter>();
