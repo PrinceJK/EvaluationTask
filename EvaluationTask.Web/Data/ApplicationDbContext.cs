@@ -11,4 +11,14 @@ public class ApplicationDbContext : DbContext
 	}
 
 	public DbSet<CancellationRequest> CancellationRequests { get; set; }
+
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
+	{
+		modelBuilder.Entity<CancellationRequest>(entity =>
+		{
+			entity.HasKey(c => c.Id);
+			entity.Property(entity => entity.Id).ValueGeneratedOnAdd();
+		});
+		base.OnModelCreating(modelBuilder);
+	}
 }
