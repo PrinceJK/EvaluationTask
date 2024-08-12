@@ -2,8 +2,9 @@
 
 namespace EvaluationTask.Web.Models.Dtos;
 
-public class CancellationRequestDto
+public class CancelationRequestDto
 {
+    public int Id { get; set; }
     public string RequestorName { get; set; }
     public DateTime RequestDate { get; set; }
     public Status Status { get; set; }

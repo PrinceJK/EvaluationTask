@@ -1,24 +1,17 @@
-﻿using EvaluationTask.Web.Data;
-using EvaluationTask.Web.Models;
-using EvaluationTask.Web.Models.Enums;
+﻿using EvaluationTask.Web.Models.Dtos;
+using EvaluationTask.Web.Repository.Interface;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EvaluationTask.Web.Controllers
 {
-    public class CancellationRequestsController : Controller
+    public class CancellationRequestsController(ICancellationRequestRepository cancellationRequestRepository) : Controller
     {
-        private readonly ApplicationDbContext _context;
-
-        public CancellationRequestsController(ApplicationDbContext context)
-        {
-            _context = context;
-        }
 
         // GET: CancellationRequests
         public async Task<IActionResult> Index()
         {
-            return View(await _context.CancellationRequests.ToListAsync());
+            var result = await cancellationRequestRepository.GetAllCancellationRequests();
+            return View(result.Value);
         }
 
         public async Task<IActionResult> ViewMessage(int? id)
@@ -28,17 +21,14 @@ namespace EvaluationTask.Web.Controllers
                 return NotFound();
             }
 
-            var message = await _context.CancellationRequests
-                .Where(m => m.Id == id)
-                .Select(m => m.Message)
-                .FirstOrDefaultAsync();
+            var messageResult = await cancellationRequestRepository.GetCancellationRequestMessage(id.Value);
 
-            if (message == null)
+            if (!messageResult.IsSuccess)
             {
                 return NotFound();
             }
 
-            return PartialView("_MessageView", message);
+            return PartialView("_MessageView", messageResult.Value);
         }
 
         // GET: CancellationRequests/Create
@@ -48,16 +38,13 @@ namespace EvaluationTask.Web.Controllers
         }
 
         // POST: CancellationRequests/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,RequestorName,RequestDate,Status,FeeAmount,Message")] CancellationRequest cancellationRequest)
+        public async Task<IActionResult> Create([Bind("Id,RequestorName,RequestDate,Status,FeeAmount,Message")] CancelationRequestDto cancellationRequest)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(cancellationRequest);
-                await _context.SaveChangesAsync();
+                await cancellationRequestRepository.CreateCancellationRequest(cancellationRequest);
                 return RedirectToAction(nameof(Index));
             }
             return View(cancellationRequest);
@@ -71,20 +58,18 @@ namespace EvaluationTask.Web.Controllers
                 return NotFound();
             }
 
-            var cancellationRequest = await _context.CancellationRequests.FindAsync(id);
-            if (cancellationRequest == null)
+            var cancellationRequest = await cancellationRequestRepository.GetCancellationRequest(id.Value);
+            if (!cancellationRequest.IsSuccess)
             {
                 return NotFound();
             }
-            return View(cancellationRequest);
+            return View(cancellationRequest.Value);
         }
 
         // POST: CancellationRequests/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,RequestorName,RequestDate,Status,FeeAmount,Message")] CancellationRequest cancellationRequest)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,RequestorName,RequestDate,Status,FeeAmount,Message")] CancelationRequestDto cancellationRequest)
         {
             if (id != cancellationRequest.Id)
             {
@@ -93,28 +78,12 @@ namespace EvaluationTask.Web.Controllers
 
             if (ModelState.IsValid)
             {
-                try
+                var cancelationRequestResult = await cancellationRequestRepository.EditCancellationRequest(cancellationRequest);
+                if (cancelationRequestResult.IsSuccess)
                 {
-                    if (cancellationRequest.Status != Status.ApprovedWithFee)
-                    {
-                        cancellationRequest.FeeAmount = default(decimal);
-                    }
-                    _context.Update(cancellationRequest);
-                    await _context.SaveChangesAsync();
-
-                    return Json(new { success = true, message = "Request updated successfully." });
+                    return Json(new { success = true, message = "Request updated successfully" });
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CancellationRequestExists(cancellationRequest.Id))
-                    {
-                        return Json(new { success = false, message = "Request not found." });
-                    }
-                    else
-                    {
-                        return Json(new { success = false, message = "An error occurred while updating the request." });
-                    }
-                }
+                return Json(new { success = false, message = "An error occurred while updating the request." });
             }
 
             // Collect validation errors
@@ -127,11 +96,6 @@ namespace EvaluationTask.Web.Controllers
                 }).ToList();
 
             return Json(new { success = false, message = "Validation failed.", errors = errors });
-        }
-
-        private bool CancellationRequestExists(int id)
-        {
-            return _context.CancellationRequests.Any(e => e.Id == id);
         }
     }
 }

@@ -1,6 +1,9 @@
 using EvaluationTask.Web.Data;
 using EvaluationTask.Web.Data.Extensions;
 using EvaluationTask.Web.Filters;
+using EvaluationTask.Web.Models.Mapper;
+using EvaluationTask.Web.Repository.Implementation;
+using EvaluationTask.Web.Repository.Interface;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -29,6 +32,10 @@ builder.Services.AddControllersWithViews(options =>
 {
 	options.Filters.Add<LoggingActionFilter>();
 });
+
+builder.Services.AddAutoMapper(typeof(AutoMapperInitializer));
+builder.Services.AddScoped<ICancellationRequestRepository, CancellationRequestRepository>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
