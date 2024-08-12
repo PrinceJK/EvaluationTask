@@ -1,0 +1,68 @@
+﻿@model IEnumerable<EvaluationTask.Web.Models.CancellationRequest>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Edit</th>
+            <th>Requestor</th>
+            <th>Request Date</th>
+            <th>Status</th>
+            <th>Fee</th>
+            <th>Message</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td><a asp-action="Edit" asp-route-id="@item.Id">edit</a></td>
+                <td>@Html.DisplayFor(modelItem => item.RequestorName)</td>
+                <td>@Html.DisplayFor(modelItem => item.RequestDate)</td>
+                <td>@Html.DisplayFor(modelItem => item.Status)</td>
+                <td>@Html.DisplayFor(modelItem => item.FeeAmount)</td>
+                <td><a href="javascript:void(0);" onclick="viewMessage(@item.Id)">view message</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div id="messageModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Message</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="messageContent"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function viewMessage(id) {
+            $.get('/CancellationRequests/ViewMessage/' + id, function (data) {
+                $('#messageContent').html(data);
+                var myModal = new bootstrap.Modal(document.getElementById('messageModal'));
+                myModal.show();
+            });
+        }
+    </script>
+}

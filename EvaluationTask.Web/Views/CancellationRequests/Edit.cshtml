@@ -1,0 +1,163 @@
+﻿@using EvaluationTask.Web.Models.Enums
+@using EvaluationTask.Web.Extensions
+@model EvaluationTask.Web.Models.CancellationRequest
+
+@{
+    ViewData["Title"] = "Cancellation Request";
+}
+
+<h1>Edit Cancellation Request</h1>
+<hr />
+<div class="row justify-content-center">
+    <div class="col-md-4">
+        <form asp-action="Edit" onsubmit="handleSubmit(event)">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="RequestorName" />
+            <input type="hidden" asp-for="RequestDate" />
+
+            <div class="form-group">
+                <label class="control-label">Requestor:</label>
+                <span>@Model.RequestorName</span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Request Date:</label>
+                <span>@Model.RequestDate.ToString("MM/dd/yyyy")</span>
+            </div>
+            <div class="form-group">
+                @foreach (Status status in Enum.GetValues(typeof(Status)))
+                {
+                    <div class="form-check" style="display: flex; align-items: center;">
+                        <input asp-for="Status" class="form-check-input" type="radio" value="@status" id="@status" onchange="toggleFeeInput(this)" />
+                        <label class="form-check-label" for="@status" style="margin-right: 10px;">@status.GetDisplayName()</label>
+
+                        @if (status == Status.ApprovedWithFee)
+                        {
+                            <input asp-for="FeeAmount" type="number" step="0.01" class="form-control" id="feeAmountInput" style="display: none; width: 100px; margin-left: 10px;" />
+                            <span asp-validation-for="FeeAmount" class="text-danger" id="feeAmountValidation"></span>
+                        }
+                    </div>
+                }
+                <span asp-validation-for="Status" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <textarea asp-for="Message" class="form-control" placeholder="Note that goes to user's email whether decline/approve (optional)" style="width: 100%; height: 100px;"></textarea>
+                <span asp-validation-for="Message" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Submit" class="btn btn-primary save-button" style="width: 100%;" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="successModalLabel">Success</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Your changes have been saved successfully!
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="redirectToIndex()">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function handleSubmit(event) {
+            event.preventDefault();
+            var form = $(event.target);
+            var isValid = true;
+
+            // Validate FeeAmount if visible
+            var feeAmountInput = document.getElementById('feeAmountInput');
+            if (feeAmountInput && feeAmountInput.style.display !== 'none') {
+                var feeValue = parseFloat(feeAmountInput.value);
+                if (isNaN(feeValue) || feeValue < 0) {
+                    document.getElementById('feeAmountValidation').textContent = 'Fee Amount must be a valid non-negative decimal number.';
+                    isValid = false;
+                } else {
+                    document.getElementById('feeAmountValidation').textContent = '';
+                }
+            }
+
+            // Generic alert if form is not valid
+            if (!isValid) {
+                alert('Oops, you missed some validations. Try again.');
+                return;
+            }
+
+            $.ajax({
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function (response) {
+                    if (response.success) {
+                        $('#successModal .modal-body').text(response.message || 'Your changes have been saved successfully!');
+                        $('#successModal').modal('show');
+                    } else {
+                        // Clear previous validation messages
+                        $('.text-danger').empty();
+
+                        // Display server-side validation errors
+                        if (response.errors) {
+                            response.errors.forEach(function (error) {
+                                var field = error.field.replace('.', '_'); // Ensure field ID matches
+                                var errorMessage = error.errors.join(' ');
+
+                                // Find the validation summary for the specific field and display the error
+                                var fieldElement = $('[name="' + field + '"]');
+                                if (fieldElement.length > 0) {
+                                    fieldElement.next('.text-danger').text(errorMessage);
+                                }
+                            });
+                        }
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert('Error saving data.');
+                }
+            });
+        }
+
+        function toggleFeeInput(radio) {
+            var feeAmountInput = document.getElementById('feeAmountInput');
+            if (radio.value === '@Status.ApprovedWithFee') {
+                feeAmountInput.style.display = 'inline-block';
+                feeAmountInput.required = true;
+            } else {
+                feeAmountInput.style.display = 'none';
+                feeAmountInput.required = false;
+                document.getElementById('feeAmountValidation').textContent = ''; // Clear any previous validation message
+            }
+        }
+
+        // Initialize the FeeAmount visibility based on the initial selection
+        document.addEventListener('DOMContentLoaded', function () {
+            var selectedRadio = document.querySelector('input[name="Status"]:checked');
+            if (selectedRadio) {
+                toggleFeeInput(selectedRadio);
+            }
+        });
+
+        function redirectToIndex() {
+            window.location.href = '@Url.Action("Index", "CancellationRequests")';
+        }
+    </script>
+}
