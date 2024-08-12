@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EvaluationTask.Web.Models;
 
-public class CancellationRequest
+public class CancelationRequest
 {
 	public int Id { get; set; }
 

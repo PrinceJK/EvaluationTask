@@ -5,9 +5,9 @@ namespace EvaluationTask.Web.Data.Extensions;
 
 internal class InitialData
 {
-	public static IEnumerable<CancellationRequest> CancellationRequests =>
+	public static IEnumerable<CancelationRequest> CancellationRequests =>
 		[
-			new CancellationRequest()
+			new CancelationRequest()
 			{
 				RequestorName = "Winne Pooh",
 				RequestDate = DateTime.Parse("11/02/2024"),
@@ -15,7 +15,7 @@ internal class InitialData
 				FeeAmount = 0,
 				Message = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s"
 			},
-			new CancellationRequest()
+			new CancelationRequest()
 			{
 				RequestorName = "Goody Dog",
 				RequestDate = DateTime.Parse("11/02/2024"),
@@ -23,7 +23,7 @@ internal class InitialData
 				FeeAmount = 0,
 				Message = "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout."
 			},
-			new CancellationRequest()
+			new CancelationRequest()
 			{
 				RequestorName = "Micky Mousel",
 				RequestDate = DateTime.Parse("11/02/2024"),
@@ -31,7 +31,7 @@ internal class InitialData
 				FeeAmount = 0,
 				Message = "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour"
 			},
-			new CancellationRequest()
+			new CancelationRequest()
 			{
 				RequestorName = "Winne Pooh",
 				RequestDate = DateTime.Parse("11/02/2024"),
