@@ -17,7 +17,7 @@ public class CancellationRequest
 	public Status Status { get; set; }
 
 	[DataType(DataType.Currency)]
-	public decimal? FeeAmount { get; set; }
+	public decimal FeeAmount { get; set; }
 
 	[Required]
     public string Message { get; set; }

@@ -34,7 +34,7 @@
                         
                         @if (status == Status.ApprovedWithFee)
                         {
-                            <input asp-for="FeeAmount" type="number" step="0.01" class="form-control" id="feeAmountInput" style="display: none; width: 100px; margin-left: 10px;" required />
+                            <input asp-for="FeeAmount" type="number" step="0.01" class="form-control" id="feeAmountInput" style="display: none; width: 100px; margin-left: 10px;" />
                             <span asp-validation-for="FeeAmount" class="text-danger" id="feeAmountValidation"></span>
                         }
                     </div>
@@ -89,7 +89,6 @@
             const requestorName = document.getElementById('requestNameInput');
             const requestorNamePattern = /^[a-zA-Z]+(\s[a-zA-Z]+)*$/;
             if (!requestorNamePattern.test(requestorName.value)) {
-                console.log("This is invalid bro")
                 document.getElementById('requestNameValidation').textContent = 'Invalid name format';
                 isValid = false;
             } else {
@@ -98,16 +97,14 @@
 
             // Check Fee Amount if visible
             const feeAmountInput = document.getElementById('feeAmountInput');
-            if (feeAmountInput && feeAmountInput.style.display !== 'none' && feeAmountInput.value !== '') {
-                const feeValue = parseFloat(feeAmountInput.value);
-                if (isNaN(feeValue)) {
-                    document.getElementById('feeAmountValidation').textContent = 'Fee Amount must be a valid decimal number.';
+            if (feeAmountInput && feeAmountInput.style.display !== 'none') {
+                var feeValue = parseFloat(feeAmountInput.value);
+                if (isNaN(feeValue) || feeValue < 0) {
+                    document.getElementById('feeAmountValidation').textContent = 'Fee Amount must be a valid non-negative decimal number.';
                     isValid = false;
                 } else {
                     document.getElementById('feeAmountValidation').textContent = '';
                 }
-            } else {
-                document.getElementById('feeAmountValidation').textContent = '';
             }
 
             // Generic alert if form is not valid
